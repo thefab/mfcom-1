@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cat ${MODULE_HOME}/config/redis.conf |envtpl >${MODULE_RUNTIME_HOME}/tmp/config_auto/redis.conf
+if test -s ${MODULE_RUNTIME_HOME}/tmp/config_auto/redis.conf; then
+    exit 0
+else
+    exit 1
+fi

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eu
+
+cat "${MODULE_HOME}/config/circus.ini" | envtpl
+if test -f "${MODULE_RUNTIME_HOME}/tmp/config_auto/circus.ini.extra"; then
+    cat "${MODULE_RUNTIME_HOME}/tmp/config_auto/circus.ini.extra"
+fi

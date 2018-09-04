@@ -1,0 +1,11 @@
+prefix={{MFCOM_HOME}}
+exec_prefix={{MFCOM_HOME}}
+libdir={{MFCOM_HOME}}/lib
+includedir={{MFCOM_HOME}}/include
+
+Name: synutil
+Description: bibliotheque utilitaire
+Version: 0.1.0
+Requires: glib-2.0 gobject-2.0 gthread-2.0
+Libs: -L${libdir} -lsynutil -L{{MFCOM_HOME}}/lib
+Cflags: -I${includedir} -I{{MFCOM_HOME}}/include

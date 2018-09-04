@@ -1,0 +1,7 @@
+echo_ok
+echo_bold
+echo_warning
+echo_nok
+echo_running
+config.py
+get_unique_hexa_identifier

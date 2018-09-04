@@ -1,0 +1,44 @@
+#!/bin/bash
+
+. ${MFEXT_HOME}/lib/bash_utils.sh
+exit_if_root
+
+if test "${MODULE}" = ""; then
+  echo "ERROR: MODULE env var is empty"
+  exit 1
+fi
+
+if ! test -s "${MODULE_RUNTIME_HOME}/var/uuid"; then
+    get_unique_hexa_identifier >"${MODULE_RUNTIME_HOME}/var/uuid"
+fi
+
+echo -n "- Generating circus.ini"
+echo_running
+_make_circus_conf >${MODULE_RUNTIME_HOME}/tmp/config_auto/circus.ini
+if test -s ${MODULE_RUNTIME_HOME}/tmp/config_auto/circus.ini; then
+    echo_ok
+else
+    echo_nok
+fi
+CONFIG_FILE=${MODULE_RUNTIME_HOME}/tmp/config_auto/circus.ini
+
+# Lancement du daemon
+echo -n "- Starting circus..."
+echo_running
+
+# Verification si le daemon n'est pas deja present
+echo_running
+_circus.status >/dev/null 2>&1
+if test ${?} -eq 0; then
+  echo_warning "(already started)"
+  exit 0
+fi
+
+echo "*****************************************************************************" >> ${MODULE_RUNTIME_HOME}/log/circus.log
+echo "`date` : STARTING circus" >> ${MODULE_RUNTIME_HOME}/log/circus.log
+echo "*****************************************************************************" >> ${MODULE_RUNTIME_HOME}/log/circus.log
+export METWORK_KILL_REMAINING=1
+start_daemon "layer_wrapper --layers=python3_circus@mfext -- circusd ${CONFIG_FILE}" ${MODULE_RUNTIME_HOME}/log/circus.log ${MODULE_RUNTIME_HOME}/log/circus.log
+echo_ok
+
+exit 0

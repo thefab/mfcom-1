@@ -1,0 +1,78 @@
+{% if MODULE_LOG_STDOUT == "ext://sys.stdout" %}
+    {% set STDOUT_CLASS = "logging.StreamHandler" %}
+    {% set STDOUT_KEY = "stream" %}
+{% else %}
+    {% set STDOUT_CLASS = "logging.FileHandler" %}
+    {% set STDOUT_KEY = "filename" %}
+{% endif %}
+{% if MODULE_LOG_STDERR == "ext://sys.stderr" %}
+    {% set STDERR_CLASS = "logging.StreamHandler" %}
+    {% set STDERR_KEY = "stream" %}
+{% else %}
+    {% set STDERR_CLASS = "logging.FileHandler" %}
+    {% set STDERR_KEY = "filename" %}
+{% endif %}
+{% if MODULE_LOG_EXTERNAL_MONITORING_FILE == "null" %}
+    {% set EXTERNAL_MONITORING_FILE = "/dev/null" %}
+{% else %}
+    {% set EXTERNAL_MONITORING_FILE = MODULE_LOG_EXTERNAL_MONITORING_FILE %}
+{% endif %}
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "metwork": {
+            "()": "mflog.formatters.UTCFormatter",
+            "format": "%(asctime)s %(extra_space)s[%(levelname)s] : (%(name)s#%(process)s) %(message)s",
+            "datefmt": ""
+        },
+        "external": {
+            "()": "mflog.formatters.OneLineSafeUTCFormatter",
+            "format": "%(asctime)s;GMT;{{MFCOM_HOSTNAME}};METWORK;%(name)s;%(levelname)s;%(message)s;;",
+            "datefmt": "%Y-%m-%d;%H:%M:%S"
+        }
+    },
+    "handlers": {
+        "stdout": {
+            "class": "{{STDOUT_CLASS}}",
+            "level": "NOTSET",
+            "formatter": "metwork",
+            "filters": ["stdout_filter", "add_context"],
+            "{{STDOUT_KEY}}": "{{MODULE_LOG_STDOUT}}"
+        },
+        "stderr": {
+            "class": "{{STDERR_CLASS}}",
+            "level": "NOTSET",
+            "formatter": "metwork",
+            "filters": ["stderr_filter", "add_context"],
+            "{{STDERR_KEY}}": "{{MODULE_LOG_STDERR}}"
+        },
+        "external": {
+            "class": "logging.FileHandler",
+            "level": "{{MODULE_LOG_EXTERNAL_MONITORING_LEVEL}}",
+            "formatter": "{{MODULE_LOG_EXTERNAL_MONITORING_FORMATTER}}",
+            "filters": ["add_context"{% if MODULE_LOG_EXTERNAL_MONITORING_FILE == "null"%}, "ignore_filter"{% endif %}],
+            "filename": "{{EXTERNAL_MONITORING_FILE}}"
+        }
+    },
+    "loggers": {
+        "": {
+            "level": "{{MODULE_LOG_DEFAULT_LEVEL}}",
+            "handlers": ["stdout", "stderr", "external"]
+        }
+    },
+    "filters": {
+        "add_context": {
+            "()": "mflog.filters.AddContextFilter"
+        },
+        "stdout_filter": {
+            "()": "mflog.filters.StdoutFilter"
+        },
+        "stderr_filter": {
+            "()": "mflog.filters.StderrFilter"
+        },
+        "ignore_filter": {
+            "()": "mflog.filters.IgnoreAllFilter"
+        }
+    }
+}
